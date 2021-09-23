@@ -172,7 +172,7 @@ BEGIN
 	DROP TABLE MisTableBkp_9 ;
 	SET vStatus = -110;	
 	
-	-- Here to remove duplicate session id use insert ignore	
+	--dinkar Here to remove duplicate session id use insert ignore	
 	
 	INSERT IGNORE INTO MisTable_LastDay 
 		SELECT * FROM MisTableBkp_0 WHERE SubmitDate < vFromDate;
