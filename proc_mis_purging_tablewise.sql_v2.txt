@@ -1,0 +1,198 @@
+DELIMITER $$
+
+USE `smsEngine`$$
+
+DROP PROCEDURE IF EXISTS `proc_mis_purging_tablewise`$$
+
+CREATE DEFINER=`bmg`@`%` PROCEDURE `proc_mis_purging_tablewise`(
+							   )
+BEGIN
+	DECLARE vFromDate DATETIME;
+	DECLARE vStatus,vEffRows INT;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		GET DIAGNOSTICS CONDITION 1 @SQLSTATE = RETURNED_SQLSTATE,  @errno = MYSQL_ERRNO, @TEXT = MESSAGE_TEXT;
+		
+		CALL `proc_error_log`('proc_mis_purging_tablewise',@errno,@TEXT);
+		
+		INSERT INTO tbl_mis_purging_log(purging_date,`status`,error_code,error_desc)
+		VALUES(NOW(),'ERROR',@errno,CONCAT(' MIS Purging, Stage :',vStatus,', ',@TEXT));
+		
+		SELECT vStatus;			
+        END;
+	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
+	
+	SET vFromDate = TIMESTAMP(CURDATE(),'00:00:00');
+	SET vStatus = 1;
+	
+	INSERT INTO tbl_mis_purging_log(purging_date,`status`,error_code,error_desc)
+		VALUES(NOW(),'START',vStatus,'MIS Purging start.');
+		
+	TRUNCATE TABLE MisTable_D6;
+	
+	/******************************FOR SMPP SERVERS ONLY (198,202)*****************************/
+	
+	 TRUNCATE TABLE MisTable_D5;
+	 TRUNCATE TABLE MisTable_D4;
+	 TRUNCATE TABLE MisTable_D3;
+	 TRUNCATE TABLE MisTable_D2;
+	  TRUNCATE TABLE MisTable_LastDay; 
+	/******************************FOR SMPP SERVERS ONLY (198,202)*****************************/
+	
+	RENAME TABLE MisTable_D6 TO MisTable_LastDay_tmp;
+	RENAME TABLE MisTable_D5 TO MisTable_D6;
+        RENAME TABLE MisTable_D4 TO MisTable_D5;
+	RENAME TABLE MisTable_D3 TO MisTable_D4;
+	RENAME TABLE MisTable_D2 TO MisTable_D3;	
+	RENAME TABLE MisTable_LastDay TO MisTable_D2;
+	RENAME TABLE MisTable_LastDay_tmp TO MisTable_LastDay;	
+	
+	SET vStatus = -200;
+	
+	INSERT INTO MisTableBkp_0 
+		SELECT * FROM MisTable_0 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_0.SenderId,Msisdn = MisTable_0.Msisdn,ErrorCode = MisTable_0.ErrorCode, ErrorType = MisTable_0.ErrorType, 
+			RetryCount = MisTable_0.RetryCount, MessageId = MisTable_0.MessageId, SubmitDate=MisTable_0.SubmitDate, 
+			DeliveryDate = MisTable_0.DeliveryDate,STATUS = MisTable_0.STATUS, 
+			statusDescription = MisTable_0.statusDescription,DeliveryTime = MisTable_0.DeliveryTime;
+	SET vStatus = -201;
+	
+	INSERT INTO MisTableBkp_1
+		SELECT * FROM MisTable_1 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_1.SenderId,
+		   Msisdn = MisTable_1.Msisdn,ErrorCode = MisTable_1.ErrorCode, ErrorType = MisTable_1.ErrorType, 
+			RetryCount = MisTable_1.RetryCount, MessageId = MisTable_1.MessageId, SubmitDate=MisTable_1.SubmitDate, 
+			DeliveryDate = MisTable_1.DeliveryDate,STATUS = MisTable_1.STATUS, 
+			statusDescription = MisTable_1.statusDescription,DeliveryTime = MisTable_1.DeliveryTime;
+	SET vStatus = -202;
+	
+	INSERT INTO MisTableBkp_2 
+		SELECT * FROM MisTable_2 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_2.SenderId,
+		Msisdn = MisTable_2.Msisdn,ErrorCode = MisTable_2.ErrorCode, ErrorType = MisTable_2.ErrorType, 
+			RetryCount = MisTable_2.RetryCount, MessageId = MisTable_2.MessageId, SubmitDate=MisTable_2.SubmitDate, 
+			DeliveryDate = MisTable_2.DeliveryDate,STATUS = MisTable_2.STATUS, 
+			statusDescription = MisTable_2.statusDescription,DeliveryTime = MisTable_2.DeliveryTime;
+	SET vStatus = -203;
+	
+	INSERT INTO MisTableBkp_3 
+		SELECT * FROM MisTable_3 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_3.SenderId,
+		Msisdn = MisTable_3.Msisdn,ErrorCode = MisTable_3.ErrorCode, ErrorType = MisTable_3.ErrorType, 
+			RetryCount = MisTable_3.RetryCount, MessageId = MisTable_3.MessageId, SubmitDate=MisTable_3.SubmitDate, 
+			DeliveryDate = MisTable_3.DeliveryDate,STATUS = MisTable_3.STATUS, 
+			statusDescription = MisTable_3.statusDescription,DeliveryTime = MisTable_3.DeliveryTime;
+	SET vStatus = -204;
+	
+	INSERT INTO MisTableBkp_4
+	       SELECT * FROM MisTable_4 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_4.SenderId,
+	       Msisdn = MisTable_4.Msisdn,ErrorCode = MisTable_4.ErrorCode, ErrorType = MisTable_4.ErrorType, 
+			RetryCount = MisTable_4.RetryCount, MessageId = MisTable_4.MessageId, SubmitDate=MisTable_4.SubmitDate, 
+			DeliveryDate = MisTable_4.DeliveryDate,STATUS = MisTable_4.STATUS, 
+			statusDescription = MisTable_4.statusDescription,DeliveryTime = MisTable_4.DeliveryTime;
+	
+	SET vStatus = -205;
+	INSERT INTO MisTableBkp_5
+	   SELECT * FROM MisTable_5 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_5.SenderId,
+	   Msisdn = MisTable_5.Msisdn,ErrorCode = MisTable_5.ErrorCode, ErrorType = MisTable_5.ErrorType, 
+			RetryCount = MisTable_5.RetryCount, MessageId = MisTable_5.MessageId, SubmitDate=MisTable_5.SubmitDate, 
+			DeliveryDate = MisTable_5.DeliveryDate,STATUS = MisTable_5.STATUS, 
+			statusDescription = MisTable_5.statusDescription,DeliveryTime = MisTable_5.DeliveryTime;
+	SET vStatus = -206;
+	INSERT INTO MisTableBkp_6 
+	
+		SELECT * FROM MisTable_6 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_6.SenderId,
+		Msisdn = MisTable_6.Msisdn,ErrorCode = MisTable_6.ErrorCode, ErrorType = MisTable_6.ErrorType, 
+			RetryCount = MisTable_6.RetryCount, MessageId = MisTable_6.MessageId, SubmitDate=MisTable_6.SubmitDate, 
+			DeliveryDate = MisTable_6.DeliveryDate,STATUS = MisTable_6.STATUS, 
+			statusDescription = MisTable_6.statusDescription,DeliveryTime = MisTable_6.DeliveryTime;
+	SET vStatus = -207;
+	INSERT INTO MisTableBkp_7
+	           SELECT * FROM MisTable_7 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_7.SenderId,
+	           Msisdn = MisTable_7.Msisdn,ErrorCode = MisTable_7.ErrorCode, ErrorType = MisTable_7.ErrorType, 
+			RetryCount = MisTable_7.RetryCount, MessageId = MisTable_7.MessageId, SubmitDate=MisTable_7.SubmitDate, 
+			DeliveryDate = MisTable_7.DeliveryDate,STATUS = MisTable_7.STATUS, 
+			statusDescription = MisTable_7.statusDescription,DeliveryTime = MisTable_7.DeliveryTime;
+	SET vStatus = -208;
+	INSERT INTO MisTableBkp_8
+	      SELECT * FROM MisTable_8 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_8.SenderId,
+	      Msisdn = MisTable_8.Msisdn,ErrorCode = MisTable_8.ErrorCode, ErrorType = MisTable_8.ErrorType, 
+			RetryCount = MisTable_8.RetryCount, MessageId = MisTable_8.MessageId, SubmitDate=MisTable_8.SubmitDate, 
+			DeliveryDate = MisTable_8.DeliveryDate,STATUS = MisTable_8.STATUS, 
+			statusDescription = MisTable_8.statusDescription,DeliveryTime = MisTable_8.DeliveryTime;
+	SET vStatus = -209;
+	INSERT INTO MisTableBkp_9
+	      SELECT * FROM MisTable_9 WHERE SubmitDate < vFromDate ON DUPLICATE KEY UPDATE SenderId=MisTable_9.SenderId,
+	                Msisdn = MisTable_9.Msisdn,ErrorCode = MisTable_9.ErrorCode, ErrorType = MisTable_9.ErrorType, 
+			RetryCount = MisTable_9.RetryCount, MessageId = MisTable_9.MessageId, 
+			SubmitDate=MisTable_9.SubmitDate, 
+			DeliveryDate = MisTable_9.DeliveryDate,STATUS = MisTable_9.STATUS, 
+			statusDescription = MisTable_9.statusDescription,DeliveryTime = MisTable_9.DeliveryTime;
+	
+	SET vStatus = -101;
+	
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_1 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_1 ;
+	SET vStatus = -102;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_2 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_2 ;
+	SET vStatus = -103;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_3 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_3 ;
+	SET vStatus = -104;
+	
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_4 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_4 ;
+	SET vStatus = -105;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_5 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_5 ;
+	 SET vStatus = -106;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_6 WHERE SubmitDate < vFromDate;
+	 DROP TABLE MisTableBkp_6 ;
+	SET vStatus = -107;
+	
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_7 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_7 ;
+	SET vStatus = -108;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_8 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_8 ;
+	SET vStatus = -109;
+		
+	INSERT INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_9 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_9 ;
+	SET vStatus = -110;	
+-- hi	
+
+	
+	INSERT IGNORE INTO MisTable_LastDay 
+		SELECT * FROM MisTableBkp_0 WHERE SubmitDate < vFromDate;
+	DROP TABLE MisTableBkp_0 ;
+	SET vStatus = -100;
+	
+	DELETE FROM tbl_mis_summary_tmp  
+	    WHERE SubmitDate < SUBDATE(CURDATE(),INTERVAL 1 DAY);
+	
+	OPTIMIZE TABLE tbl_mis_summary_tmp;
+	
+	SET vStatus = 0;	
+	        
+	INSERT INTO tbl_mis_purging_log(purging_date,`status`,error_code,error_desc)
+		VALUES(NOW(),'END',vStatus,'MIS Purging end.');	
+	
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ ;	
+	
+	SELECT vStatus;	
+		
+END$$
+
+DELIMITER ;
